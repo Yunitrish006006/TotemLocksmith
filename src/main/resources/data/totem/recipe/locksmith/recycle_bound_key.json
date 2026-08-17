@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "totem:locksmith/bound_key"
+  ],
+  "result": {
+    "id": "totem:locksmith/key_blank",
+    "count": 1
+  }
+}

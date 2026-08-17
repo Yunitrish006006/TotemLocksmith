@@ -1,0 +1,12 @@
+{
+  "parent": "deadrecall:locksmith_manual",
+  "criteria": {
+    "locked_network": { "trigger": "minecraft:impossible" }
+  },
+  "display": {
+    "description": { "translate": "advancements.deadrecall.locked_network.description" },
+    "icon": { "id": "minecraft:hopper" },
+    "title": { "translate": "advancements.deadrecall.locked_network.title" }
+  },
+  "requirements": [["locked_network"]]
+}

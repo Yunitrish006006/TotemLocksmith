@@ -1,0 +1,17 @@
+{
+  "parent": "deadrecall:root",
+  "criteria": {
+    "crafted_padlock": {
+      "conditions": {
+        "recipe_id": "totem:locksmith/padlock"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    }
+  },
+  "display": {
+    "description": { "translate": "advancements.deadrecall.locksmith_root.description" },
+    "icon": { "id": "totem:locksmith/padlock" },
+    "title": { "translate": "advancements.deadrecall.locksmith_root.title" }
+  },
+  "requirements": [["crafted_padlock"]]
+}

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "totem-locksmith",
+  "version": "${version}",
+  "name": "Totem Locksmith",
+  "icon": "assets/totem-locksmith/icon.png",
+  "description": "Server-authoritative locks for fixed containers and Hopper storage networks.",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.totem.locksmith.TotemLocksmith"],
+    "client": ["dev.totem.locksmith.client.TotemLocksmithClient"]
+  },
+  "mixins": [
+    "totem-locksmith.mixins.json",
+    { "config": "totem-locksmith.client.mixins.json", "environment": "client" }
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "fabric-api": "*",
+    "minecraft": "~26.2",
+    "java": ">=25",
+    "totem-core": "=0.6.0"
+  }
+}

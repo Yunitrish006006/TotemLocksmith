@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "dev.totem.locksmith.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "BaseContainerBlockEntityMixin",
+    "BlockItemMixin",
+    "HopperBlockEntityMixin",
+    "PistonStructureResolverMixin",
+    "ServerExplosionMixin"
+  ],
+  "injectors": { "defaultRequire": 1 }
+}

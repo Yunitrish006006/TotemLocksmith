@@ -1,0 +1,113 @@
+plugins {
+    id 'fabric-loom' version '1.17.12'
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+base { archivesName = project.archives_base_name }
+
+def locksmithRestartProbePhase = providers.gradleProperty('totemLocksmithRestartProbePhase')
+        .orElse(providers.environmentVariable('TOTEM_LOCKSMITH_RESTART_PROBE_PHASE'))
+        .orNull
+def locksmithRestartProbeMarkerDirectory = providers.gradleProperty('totemLocksmithRestartProbeMarkerDir')
+        .orElse(providers.environmentVariable('TOTEM_LOCKSMITH_RESTART_PROBE_MARKER_DIR'))
+        .orNull
+
+def totemCoreJar = file(providers.gradleProperty('totemCoreJar')
+        .getOrElse('../TotemCore/build/libs/totem-core-0.6.0.jar'))
+
+loom {
+    splitEnvironmentSourceSets()
+    mods {
+        'totem-locksmith' {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+    }
+}
+
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = 'totem-locksmith-gametest'
+        enableGameTests = true
+        enableClientGameTests = true
+        eula = true
+    }
+}
+
+loom {
+    runs {
+        locksmithRestartProbe {
+            server()
+            setConfigName('TotemLocksmith Restart Probe')
+            ideConfigGenerated(false)
+            runDir('run/locksmithRestartProbe')
+            source sourceSets.gametest
+            programArg('--nogui')
+            if (locksmithRestartProbePhase != null) {
+                environmentVariable('TOTEM_LOCKSMITH_RESTART_PROBE_PHASE', locksmithRestartProbePhase)
+            }
+            if (locksmithRestartProbeMarkerDirectory != null) {
+                environmentVariable('TOTEM_LOCKSMITH_RESTART_PROBE_MARKER_DIR', locksmithRestartProbeMarkerDirectory)
+            }
+        }
+    }
+}
+
+tasks.named('runLocksmithRestartProbe').configure {
+    doFirst {
+        File runDirectory = file('run/locksmithRestartProbe')
+        runDirectory.mkdirs()
+        new File(runDirectory, 'eula.txt').text = 'eula=true\n'
+    }
+}
+
+tasks.named('generateDLIConfig').configure {
+    inputs.property('totemLocksmithRestartProbePhase', locksmithRestartProbePhase ?: '')
+    inputs.property('totemLocksmithRestartProbeMarkerDirectory', locksmithRestartProbeMarkerDirectory ?: '')
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://repo.codemc.io/repository/relativitymc/' }
+    maven { url = 'https://maven.nucleoid.xyz/releases' }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "org.relativitymc:modern-yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    compileOnly "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    runtimeOnly "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    modImplementation files(totemCoreJar)
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.withType(Test).configureEach { useJUnitPlatform() }
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
+}
+
+tasks.named('processResources', ProcessResources) {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') { expand(version: project.version) }
+    doLast {
+        copy {
+            from(file('src/main/resources/assets/totem/lang/zh_tw.json'))
+            into(file("${destinationDir}/assets/totem/lang"))
+            rename { 'zh_cn.json' }
+        }
+    }
+}
+
+tasks.named('jar', Jar) {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+    from('LICENSE.txt') { rename { "${it}_${project.archives_base_name}" } }
+}

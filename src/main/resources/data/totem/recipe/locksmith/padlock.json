@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "N": "minecraft:iron_nugget"
+  },
+  "pattern": [
+    " N ",
+    "I I",
+    "III"
+  ],
+  "result": {
+    "id": "totem:locksmith/padlock",
+    "count": 1
+  }
+}
