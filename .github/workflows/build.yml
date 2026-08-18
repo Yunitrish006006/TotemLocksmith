@@ -2,37 +2,58 @@ name: Build
 
 on:
   push:
+    branches:
+      - main
   pull_request:
+
+permissions:
+  contents: read
 
 jobs:
   verify:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
-        with:
-          path: TotemLocksmith
-      - uses: actions/checkout@v4
-        with:
-          repository: Yunitrish006006/TotemCore
-          path: TotemCore
-      - uses: actions/setup-java@v4
+      - name: Check out Locksmith
+        uses: actions/checkout@v4
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '25'
-      - name: Build exact Core dependency
-        working-directory: TotemCore
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Check out pinned TotemCore
+        uses: actions/checkout@v4
+        with:
+          repository: Yunitrish006006/TotemCore
+          ref: c39da3cdc3b4eff16f63798dc3eae4a49e41d105
+          path: .lockstep/TotemCore
+          persist-credentials: false
+
+      - name: Build pinned TotemCore
+        shell: bash
         run: |
-          chmod +x gradlew
-          ./gradlew build --no-daemon --stacktrace
+          set -euo pipefail
+          chmod +x gradlew .lockstep/TotemCore/gradlew
+          ./.lockstep/TotemCore/gradlew -p .lockstep/TotemCore jar --no-daemon --stacktrace
+          core_version="$(sed -n 's/^mod_version=//p' .lockstep/TotemCore/gradle.properties)"
+          test -n "$core_version"
+          core_jar="${GITHUB_WORKSPACE}/.lockstep/TotemCore/build/libs/totem-core-${core_version}.jar"
+          test -f "$core_jar"
+          echo "CORE_JAR=$core_jar" >> "$GITHUB_ENV"
+
       - name: Unit and Fabric GameTests
-        working-directory: TotemLocksmith
+        shell: bash
         run: |
-          chmod +x gradlew
-          ./gradlew build runGameTest --no-daemon --stacktrace
+          set -euo pipefail
+          ./gradlew -PtotemCoreJar="$CORE_JAR" \
+            test assemble compileGametestJava runGameTest --no-daemon --stacktrace
+
       - name: Strict 16x16 asset dimensions
-        working-directory: TotemLocksmith
         shell: bash
         run: |
           set -euo pipefail
@@ -43,35 +64,42 @@ jobs:
             src/main/resources/assets/totem/textures/item/locksmith/bound_key.png
           )
           for asset in "${assets[@]}"; do
-            file "${asset}" | grep -F '16 x 16'
+            file "$asset" | grep -F '16 x 16'
           done
+
       - name: Two-JVM persistence probe
-        working-directory: TotemLocksmith
         shell: bash
         run: |
           set -euo pipefail
           markers="${RUNNER_TEMP}/totem-locksmith-restart"
-          mkdir -p "${markers}"
-          ./gradlew runLocksmithRestartProbe --no-daemon --stacktrace \
+          rm -rf "$markers"
+          mkdir -p "$markers"
+          ./gradlew -PtotemCoreJar="$CORE_JAR" \
             -PtotemLocksmithRestartProbePhase=seed \
-            -PtotemLocksmithRestartProbeMarkerDir="${markers}"
-          test -f "${markers}/seed.ok"
-          ./gradlew runLocksmithRestartProbe --no-daemon --stacktrace \
+            -PtotemLocksmithRestartProbeMarkerDir="$markers" \
+            runLocksmithRestartProbe --no-daemon --stacktrace
+          test -f "$markers/seed.ok"
+          test ! -f "$markers/seed.failure"
+          ./gradlew -PtotemCoreJar="$CORE_JAR" \
             -PtotemLocksmithRestartProbePhase=verify \
-            -PtotemLocksmithRestartProbeMarkerDir="${markers}"
-          test -f "${markers}/verify.ok"
+            -PtotemLocksmithRestartProbeMarkerDir="$markers" \
+            runLocksmithRestartProbe --no-daemon --stacktrace
+          test -f "$markers/verify.ok"
+          test ! -f "$markers/verify.failure"
+
       - name: Dedicated Server startup
-        working-directory: TotemLocksmith
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p run
           printf 'eula=true\n' > run/eula.txt
           set +e
-          timeout --signal=TERM --kill-after=15s 90s ./gradlew runServer --no-daemon --stacktrace > locksmith-server.log 2>&1
+          timeout --signal=TERM --kill-after=15s 90s \
+            ./gradlew -PtotemCoreJar="$CORE_JAR" runServer --no-daemon --stacktrace \
+            > locksmith-server.log 2>&1
           status=$?
           set -e
-          if [[ "${status}" -ne 124 ]] \
+          if [[ "$status" -ne 124 ]] \
               || ! grep -F 'Totem Locksmith initialized with fixed-Hopper network authority' locksmith-server.log \
               || ! grep -F 'Done (' locksmith-server.log; then
             cat locksmith-server.log
