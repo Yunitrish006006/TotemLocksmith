@@ -64,6 +64,28 @@ class LockAccessPolicyTest {
     }
 
     @Test
+    void immersiveModeRequiresPhysicalKeyWhileConvenientModeAllowsFriends() {
+        LockRecord record = record(AccessMode.FRIENDS, AutomationMode.DENY, List.of(),
+                List.of(new KeyGrant(KEY, "Front", 2)), 2);
+        AccessActor friendWithoutKey = AccessActor.player(ACTOR, Set.of(), true, false);
+        assertTrue(LockAccessPolicy.evaluate(record, friendWithoutKey, AccessOperation.OPEN, false).allowed());
+        assertFalse(LockAccessPolicy.evaluate(record, friendWithoutKey, AccessOperation.OPEN, true).allowed());
+        AccessActor friendWithKey = AccessActor.player(ACTOR,
+                Set.of(new AccessActor.HeldKey(LOCK, KEY, 2)), true, false);
+        assertTrue(LockAccessPolicy.evaluate(record, friendWithKey, AccessOperation.OPEN, true).allowed());
+    }
+
+    @Test
+    void immersiveModeAlsoSuppressesAllowlistAndPublicBypass() {
+        AccessActor actor = AccessActor.player(ACTOR, Set.of(), false, false);
+        LockRecord allowlist = record(AccessMode.ALLOWLIST, AutomationMode.DENY,
+                List.of(new MemberEntry(ACTOR, "Actor", MemberRole.USER)), List.of(), 0);
+        LockRecord publicLock = record(AccessMode.PUBLIC, AutomationMode.DENY, List.of(), List.of(), 0);
+        assertFalse(LockAccessPolicy.evaluate(allowlist, actor, AccessOperation.OPEN, true).allowed());
+        assertFalse(LockAccessPolicy.evaluate(publicLock, actor, AccessOperation.OPEN, true).allowed());
+    }
+
+    @Test
     void automationModeAndBreakDispositionAreExplicit() {
         LockRecord deny = record(AccessMode.PRIVATE, AutomationMode.DENY, List.of(), List.of(), 0);
         assertFalse(LockAccessPolicy.evaluate(deny, AccessActor.anonymousAutomation(), AccessOperation.INSERT).allowed());
