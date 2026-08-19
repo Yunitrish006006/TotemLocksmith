@@ -7,6 +7,7 @@ import dev.totem.locksmith.integration.FabricTransferProtection;
 import dev.totem.locksmith.manual.LocksmithManual;
 import dev.totem.locksmith.manual.LocksmithManualRecipeSync;
 import dev.totem.locksmith.persistence.LockMarkerAttachments;
+import dev.totem.locksmith.registry.LocksmithGameRules;
 import dev.totem.locksmith.registry.LocksmithItems;
 import dev.totem.locksmith.service.LocksmithAuthority;
 import net.fabricmc.api.ModInitializer;
@@ -20,6 +21,7 @@ public final class TotemLocksmith implements ModInitializer {
     @Override
     public void onInitialize() {
         LocksmithConfig.reload();
+        LocksmithGameRules.register();
         LocksmithDataComponents.register();
         LocksmithItems.register();
         LockMarkerAttachments.register();
