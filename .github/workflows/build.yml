@@ -65,8 +65,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: locksmith-gui-screenshots
-          path: build/run/clientGameTest/screenshots/*locksmith-management*.png
-          if-no-files-found: warn
+          path: test-artifacts/screenshots/locksmith-management/*.png
+          if-no-files-found: error
           retention-days: 14
 
       - name: Strict 16x16 asset dimensions
