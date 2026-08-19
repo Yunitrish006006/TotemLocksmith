@@ -5,8 +5,16 @@
   "name": "Totem Locksmith GameTests",
   "environment": "*",
   "entrypoints": {
-    "main": ["dev.totem.locksmith.gametest.LocksmithRestartProbe"],
-    "fabric-gametest": ["dev.totem.locksmith.gametest.LocksmithNetworkGameTest"]
+    "main": [
+      "dev.totem.locksmith.gametest.LocksmithRestartProbe"
+    ],
+    "fabric-gametest": [
+      "dev.totem.locksmith.gametest.LocksmithNetworkGameTest",
+      "dev.totem.locksmith.menu.LocksmithManagementMenuGameTest"
+    ],
+    "fabric-client-gametest": [
+      "dev.totem.locksmith.client.LocksmithManagementVisualGameTest"
+    ]
   },
   "depends": {
     "fabricloader": ">=0.19.3",

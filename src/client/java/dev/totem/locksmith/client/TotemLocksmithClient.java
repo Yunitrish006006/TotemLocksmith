@@ -10,5 +10,6 @@ public final class TotemLocksmithClient implements ClientModInitializer {
     public void onInitializeClient() {
         LocksmithManualRecipeCache.register();
         LocksmithManualPageOverlay.register();
+        LocksmithManagementScreenRegistration.register();
     }
 }

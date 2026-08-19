@@ -6,7 +6,10 @@ import dev.totem.locksmith.config.LocksmithConfig;
 import dev.totem.locksmith.integration.FabricTransferProtection;
 import dev.totem.locksmith.manual.LocksmithManual;
 import dev.totem.locksmith.manual.LocksmithManualRecipeSync;
+import dev.totem.locksmith.menu.LocksmithManagementInteraction;
+import dev.totem.locksmith.menu.LocksmithMenus;
 import dev.totem.locksmith.persistence.LockMarkerAttachments;
+import dev.totem.locksmith.registry.LocksmithGameRules;
 import dev.totem.locksmith.registry.LocksmithItems;
 import dev.totem.locksmith.service.LocksmithAuthority;
 import net.fabricmc.api.ModInitializer;
@@ -20,12 +23,15 @@ public final class TotemLocksmith implements ModInitializer {
     @Override
     public void onInitialize() {
         LocksmithConfig.reload();
+        LocksmithGameRules.register();
         LocksmithDataComponents.register();
         LocksmithItems.register();
+        LocksmithMenus.register();
         LockMarkerAttachments.register();
         FabricTransferProtection.register();
         LocksmithManualRecipeSync.register();
         LocksmithManual.register();
+        LocksmithManagementInteraction.register();
         LocksmithAuthority.register();
         LocksmithCommands.register();
         LOGGER.info("Totem Locksmith initialized with fixed-Hopper network authority");

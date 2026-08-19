@@ -7,7 +7,21 @@ public final class LockAccessPolicy {
     private LockAccessPolicy() {
     }
 
+    /** Backward-compatible policy evaluation used by tests and automation-only callers. */
     public static AccessDecision evaluate(LockRecord record, AccessActor actor, AccessOperation operation) {
+        return evaluate(record, actor, operation, false);
+    }
+
+    /**
+     * @param requirePhysicalKeys when true, player access after owner/manager/blocked checks
+     *                            requires a valid Bound Key and ignores allowlist/friends/public grants.
+     */
+    public static AccessDecision evaluate(
+            LockRecord record,
+            AccessActor actor,
+            AccessOperation operation,
+            boolean requirePhysicalKeys
+    ) {
         if (record.state() != LockState.ACTIVE) return AccessDecision.deny("repair_required");
         UUID actorId = actor.playerId();
         boolean owner = actorId != null && record.ownerId().equals(actorId);
@@ -44,6 +58,10 @@ public final class LockAccessPolicy {
         boolean key = actor.heldKeys().stream().anyMatch(held -> held.lockId().equals(record.id())
                 && record.isActiveKey(held.keyId(), held.epoch()));
         if (key) return AccessDecision.allow("key");
+
+        if (requirePhysicalKeys) {
+            return AccessDecision.deny("physical_key_required");
+        }
 
         return switch (record.accessMode()) {
             case PRIVATE -> AccessDecision.deny("private");

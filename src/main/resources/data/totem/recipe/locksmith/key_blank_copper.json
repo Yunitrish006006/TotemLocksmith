@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": "minecraft:copper_ingot"
+  },
+  "pattern": [
+    "CC ",
+    " C ",
+    " CC"
+  ],
+  "result": {
+    "id": "totem:locksmith/key_blank",
+    "count": 2
+  }
+}

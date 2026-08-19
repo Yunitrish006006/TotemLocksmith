@@ -170,6 +170,19 @@ tasks.matching { task ->
     dependsOn("normalizeFabricApiTweakersForNamedDevRuntime")
 }
 
+tasks.named('runClientGameTest').configure {
+    doLast {
+        copy {
+            from(file("${buildDir}/run/clientGameTest/screenshots"))
+            include("*_locksmith-management-zh-tw-access.png",
+                    "*_locksmith-management-zh-tw-members.png",
+                    "*_locksmith-management-zh-tw-keys.png")
+            rename { name -> name.replaceFirst(/^\d+_/, "") }
+            into(file("test-artifacts/screenshots/locksmith-management"))
+        }
+    }
+}
+
 java {
     withSourcesJar()
     sourceCompatibility = JavaVersion.VERSION_25

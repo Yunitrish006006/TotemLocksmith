@@ -22,7 +22,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public final class LocksmithManualRecipeSync {
     public static final List<Identifier> RECIPE_IDS = List.of(
             recipeId("padlock"),
-            recipeId("key_blank")
+            recipeId("key_blank"),
+            recipeId("key_blank_copper")
     );
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
 
