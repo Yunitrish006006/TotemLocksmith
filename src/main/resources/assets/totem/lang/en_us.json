@@ -52,8 +52,18 @@
   "advancements.deadrecall.locked_network.title": "One Lock, One Network",
   "advancements.deadrecall.locked_network.description": "Apply one Padlock to a fixed-Hopper-connected container network.",
   "book.totem.locksmith_manual.title": "Locksmith Method Guide",
-  "book.totem.locksmith_manual.page.1": "PADLOCKS\n\nUse one Padlock on a Chest, Trapped Chest, or Barrel. A double chest and every container connected by fixed Hopper routes share that one lock.",
-  "book.totem.locksmith_manual.page.2": "THE ROOT\n\nThe first container is the root. Breaking a middle Hopper splits the graph: only the root side stays locked; the detached side unlocks without copying the Padlock.",
-  "book.totem.locksmith_manual.page.3": "ACCESS\n\nOwners can set private, allowlist, friends, or public access and deny, trusted, or all automation. A Blocked member overrides keys and public access.",
-  "book.totem.locksmith_manual.page.4": "BREAKS & KEYS\n\nPlayers may break locked members under normal rules. Non-owner breaks send a DiscordBridge audit event. Use /locksmith while looking at the network to issue or revoke keys."
+  "book.totem.locksmith_manual.page.1": "GETTING STARTED\n\nLocksmith protects Chests, Trapped Chests, Barrels, double chests, and fixed-Hopper-connected storage. Start by crafting one Padlock.",
+  "book.totem.locksmith_manual.page.2": "PADLOCK RECIPE\n\nFive Iron Ingots and one Iron Nugget make one Padlock. The next page shows the live server recipe.",
+  "book.totem.locksmith_manual.recipe.page.1": "PADLOCK\n\n",
+  "book.totem.locksmith_manual.page.3": "APPLYING A LOCK\n\nHold the Padlock and use it on a Chest, Trapped Chest, or Barrel. The first container becomes the root. Loaded fixed Hoppers and supported containers in that network share the same lock.",
+  "book.totem.locksmith_manual.page.4": "KEY BLANKS\n\nCraft Key Blanks before issuing physical keys. Five Iron Nuggets make two blanks. The next page shows the exact arrangement.",
+  "book.totem.locksmith_manual.recipe.page.2": "KEY BLANK\n\n",
+  "book.totem.locksmith_manual.page.5": "ISSUING A KEY\n\nLook at the locked network and use /locksmith while holding a Key Blank in either hand. The server consumes the blank and returns a Bound Key tied to that lock and key generation.",
+  "book.totem.locksmith_manual.page.6": "USING KEYS\n\nA valid Bound Key grants access only while it remains in the main hand or offhand. Keys can be revoked or rotated. Blocked players stay denied even if they hold a valid physical key.",
+  "book.totem.locksmith_manual.page.7": "ACCESS ROLES\n\nOwner has full control. Managers maintain users and ordinary keys. Users gain access when the selected mode allows it. Blocked overrides users, friends, public access, and keys.",
+  "book.totem.locksmith_manual.page.8": "NETWORKS & AUTOMATION\n\nInternal Hopper transfers inside one lock continue normally. Boundary INSERT and EXTRACT follow the lock's automation policy. Breaking a middle Hopper leaves only the root component locked.",
+  "book.totem.locksmith_manual.page.9": "REMOVAL & RECYCLING\n\nRemoving the lock returns one Padlock. A Bound Key can be placed by itself in crafting to recycle it into one Key Blank. Non-owner container breaks follow normal Minecraft rules and may emit an audit event.",
+  "book.totem.locksmith_manual.recipe.loading": "Loading server recipe…",
+  "book.totem.locksmith_manual.recipe.unavailable": "Recipe unavailable on this server",
+  "book.totem.locksmith_manual.recipe.live": "Live server recipe"
 }
