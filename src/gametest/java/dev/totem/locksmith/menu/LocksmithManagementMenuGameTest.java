@@ -15,6 +15,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 
@@ -76,6 +77,7 @@ public final class LocksmithManagementMenuGameTest {
         try {
             fixture.owner().getAbilities().instabuild = false;
             fixture.owner().setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(LocksmithItems.KEY_BLANK));
+            int blanksBefore = countItem(fixture.owner(), LocksmithItems.KEY_BLANK);
             LocksmithManagementMenu menu = menuFor(fixture.owner(), fixture.record(), true, false);
             require(helper, menu.clickMenuButton(fixture.owner(), LocksmithManagementMenu.BIND_KEY),
                     "Issue Key button was rejected");
@@ -83,8 +85,8 @@ public final class LocksmithManagementMenuGameTest {
             LockRecord updated = data(helper).get(fixture.record().id()).orElseThrow();
             require(helper, updated.keys().size() == 1,
                     "Issue Key did not add exactly one key grant");
-            require(helper, fixture.owner().getMainHandItem().isEmpty(),
-                    "Issue Key did not consume the Key Blank");
+            require(helper, countItem(fixture.owner(), LocksmithItems.KEY_BLANK) == blanksBefore - 1,
+                    "Issue Key did not consume exactly one Key Blank");
 
             ItemStack bound = findBoundKey(fixture.owner());
             require(helper, !bound.isEmpty(), "Issue Key did not place a Bound Key in inventory");
@@ -158,6 +160,16 @@ public final class LocksmithManagementMenuGameTest {
                 actor.getInventory(),
                 LocksmithManagementMenuOpener.snapshot(actor, record, owner, manager)
         );
+    }
+
+    private static int countItem(ServerPlayer player, Item item) {
+        int count = 0;
+        for (ItemStack stack : player.getInventory()) {
+            if (stack.is(item)) {
+                count += stack.getCount();
+            }
+        }
+        return count;
     }
 
     private static ItemStack findBoundKey(ServerPlayer player) {
