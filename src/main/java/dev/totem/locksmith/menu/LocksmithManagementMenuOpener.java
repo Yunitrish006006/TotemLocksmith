@@ -6,6 +6,7 @@ import dev.totem.locksmith.persistence.LocksmithSavedData;
 import dev.totem.locksmith.registry.LocksmithGameRules;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -94,7 +95,7 @@ public final class LocksmithManagementMenuOpener {
                 record.ownerName(),
                 owner,
                 manager,
-                LocksmithGameRules.requirePhysicalKeys(player.serverLevel()),
+                LocksmithGameRules.requirePhysicalKeys((ServerLevel) player.level()),
                 record.accessMode().ordinal(),
                 record.automationMode().ordinal(),
                 record.logicalContainerCount(),
