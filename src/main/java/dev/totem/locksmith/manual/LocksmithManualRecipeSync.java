@@ -12,7 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
-import net.minecraft.world.item.crafting.display.SlotDisplayContext;
+import net.minecraft.world.item.crafting.SlotDisplayContext;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +22,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public final class LocksmithManualRecipeSync {
     public static final List<Identifier> RECIPE_IDS = List.of(
             recipeId("padlock"),
-            recipeId("key_blank")
+            recipeId("key_blank"),
+            recipeId("key_blank_copper")
     );
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
 
