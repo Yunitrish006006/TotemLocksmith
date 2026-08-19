@@ -12,6 +12,7 @@ import dev.totem.locksmith.domain.LockState;
 import dev.totem.locksmith.integration.NexusFriendshipBridge;
 import dev.totem.locksmith.persistence.LockMarkerAttachments;
 import dev.totem.locksmith.persistence.LocksmithSavedData;
+import dev.totem.locksmith.registry.LocksmithGameRules;
 import dev.totem.locksmith.registry.LocksmithItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -52,7 +53,12 @@ public final class LocksmithAccessService {
             return AccessDecision.deny("repair_required");
         }
         LockRecord record = resolved.record().orElseThrow();
-        return LockAccessPolicy.evaluate(record, playerActor(player, record), operation);
+        return LockAccessPolicy.evaluate(
+                record,
+                playerActor(player, record),
+                operation,
+                LocksmithGameRules.requirePhysicalKeys(level)
+        );
     }
 
     public static boolean mayOpen(ServerPlayer player, BlockPos position) {
