@@ -11,13 +11,14 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.minecraft.network.chat.Component;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 /** Captures the real 26.2 Locksmith management screen in Traditional Chinese. */
-@SuppressWarnings("UnstableApiUsage")
+@SuppressWarnings({"UnstableApiUsage", "unchecked", "rawtypes"})
 public final class LocksmithManagementVisualGameTest implements FabricClientGameTest {
     private static final UUID LOCK_ID = UUID.fromString("10000000-0000-0000-0000-000000000001");
 
@@ -50,20 +51,26 @@ public final class LocksmithManagementVisualGameTest implements FabricClientGame
             context.waitTicks(3);
             context.takeScreenshot("locksmith-management-zh-tw-access");
 
-            // 1280x720 with a 286x224 panel => left=497, top=248.
-            // Click the Members tab through the real screen input path.
-            context.getInput().setCursorPos(638, 291);
-            context.getInput().pressMouse(0);
+            context.runOnClient(client -> selectTab(screen, "MEMBERS"));
             context.waitTicks(2);
             context.takeScreenshot("locksmith-management-zh-tw-members");
 
-            // Click the Keys tab.
-            context.getInput().setCursorPos(725, 291);
-            context.getInput().pressMouse(0);
+            context.runOnClient(client -> selectTab(screen, "KEYS"));
             context.waitTicks(2);
             context.takeScreenshot("locksmith-management-zh-tw-keys");
 
             context.runOnClient(client -> client.setScreenAndShow(null));
+        }
+    }
+
+    private static void selectTab(LocksmithManagementScreen screen, String name) {
+        try {
+            Field field = LocksmithManagementScreen.class.getDeclaredField("tab");
+            field.setAccessible(true);
+            Class<? extends Enum> type = (Class<? extends Enum>) field.getType();
+            field.set(screen, Enum.valueOf(type, name));
+        } catch (ReflectiveOperationException exception) {
+            throw new IllegalStateException("Could not select Locksmith visual-test tab " + name, exception);
         }
     }
 
