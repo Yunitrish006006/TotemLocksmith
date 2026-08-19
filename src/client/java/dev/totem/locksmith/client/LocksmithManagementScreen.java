@@ -152,7 +152,7 @@ public final class LocksmithManagementScreen extends AbstractContainerScreen<Loc
                     selected, inside(mouseX, mouseY, bx, by, 122, 20), enabled);
         }
 
-        y += 58;
+        y += 45;
         graphics.text(font, Component.translatable("gui.totem.locksmith.management.automation_mode"),
                 leftPos + 12, y, 0xFF493A2E, false);
         y += 13;
@@ -292,7 +292,7 @@ public final class LocksmithManagementScreen extends AbstractContainerScreen<Loc
                     return true;
                 }
             }
-            int automationY = topPos + 184;
+            int automationY = topPos + 171;
             for (int i = 0; i < AutomationMode.values().length; i++) {
                 int bx = leftPos + 12 + i * 87;
                 if (inside(x, y, bx, automationY, 79, 20)) {
