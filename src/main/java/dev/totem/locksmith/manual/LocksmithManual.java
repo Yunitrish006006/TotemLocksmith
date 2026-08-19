@@ -7,7 +7,7 @@ import net.minecraft.world.level.block.Blocks;
 
 import java.util.List;
 
-/** The Locksmith method guide is recorded from its first supported container. */
+/** Continuous Locksmith tutorial recorded from a supported fixed container. */
 public final class LocksmithManual {
     private static final TotemManualSection SECTION = new TotemManualSection(
             Identifier.fromNamespaceAndPath("totem", "locksmith/manual"),
@@ -16,8 +16,15 @@ public final class LocksmithManual {
             List.of(
                     "book.totem.locksmith_manual.page.1",
                     "book.totem.locksmith_manual.page.2",
+                    "book.totem.locksmith_manual.recipe.page.1",
                     "book.totem.locksmith_manual.page.3",
-                    "book.totem.locksmith_manual.page.4"
+                    "book.totem.locksmith_manual.page.4",
+                    "book.totem.locksmith_manual.recipe.page.2",
+                    "book.totem.locksmith_manual.page.5",
+                    "book.totem.locksmith_manual.page.6",
+                    "book.totem.locksmith_manual.page.7",
+                    "book.totem.locksmith_manual.page.8",
+                    "book.totem.locksmith_manual.page.9"
             )
     );
 
