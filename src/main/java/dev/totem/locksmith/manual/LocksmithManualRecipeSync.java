@@ -12,7 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
-import net.minecraft.world.item.crafting.SlotDisplayContext;
+import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 
 import java.util.List;
 import java.util.Optional;
