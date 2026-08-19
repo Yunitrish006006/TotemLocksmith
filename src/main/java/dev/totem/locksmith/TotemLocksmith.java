@@ -5,6 +5,7 @@ import dev.totem.locksmith.component.LocksmithDataComponents;
 import dev.totem.locksmith.config.LocksmithConfig;
 import dev.totem.locksmith.integration.FabricTransferProtection;
 import dev.totem.locksmith.manual.LocksmithManual;
+import dev.totem.locksmith.manual.LocksmithManualRecipeSync;
 import dev.totem.locksmith.persistence.LockMarkerAttachments;
 import dev.totem.locksmith.registry.LocksmithItems;
 import dev.totem.locksmith.service.LocksmithAuthority;
@@ -23,6 +24,7 @@ public final class TotemLocksmith implements ModInitializer {
         LocksmithItems.register();
         LockMarkerAttachments.register();
         FabricTransferProtection.register();
+        LocksmithManualRecipeSync.register();
         LocksmithManual.register();
         LocksmithAuthority.register();
         LocksmithCommands.register();

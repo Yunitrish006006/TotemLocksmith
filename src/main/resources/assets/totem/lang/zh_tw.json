@@ -52,8 +52,18 @@
   "advancements.deadrecall.locked_network.title": "一鎖一網",
   "advancements.deadrecall.locked_network.description": "用一把掛鎖保護由固定漏斗相連的容器網路。",
   "book.totem.locksmith_manual.title": "鎖匠方法手冊",
-  "book.totem.locksmith_manual.page.1": "掛鎖\n\n拿一把掛鎖對箱子、陷阱箱或木桶使用。大型箱子，以及透過固定漏斗輸送路徑連接的所有容器，都只共用這一把鎖。",
-  "book.totem.locksmith_manual.page.2": "根容器\n\n最初上鎖的容器就是根。拆除中間漏斗時，只保留根那一側的鎖；分離側會解除鎖定，而且不會複製掛鎖。",
-  "book.totem.locksmith_manual.page.3": "存取\n\nOwner 可設定私人、名單、好友或公開，及拒絕、可信任或全部自動化。Blocked 會覆蓋鑰匙與公開權限。",
-  "book.totem.locksmith_manual.page.4": "破壞與鑰匙\n\n玩家仍依原版規則破壞上鎖成員；非 Owner 破壞會送出 DiscordBridge 稽核事件。看向網路使用 /locksmith 可發行或撤銷鑰匙。"
+  "book.totem.locksmith_manual.page.1": "開始使用\n\n鎖匠可保護箱子、陷阱箱、木桶、大型箱子，以及由固定漏斗連接的儲存網路。第一步先製作一把掛鎖。",
+  "book.totem.locksmith_manual.page.2": "掛鎖配方\n\n5 個鐵錠加 1 個鐵粒可製作 1 把掛鎖。下一頁會直接顯示伺服器目前實際使用的合成表。",
+  "book.totem.locksmith_manual.recipe.page.1": "掛鎖\n\n",
+  "book.totem.locksmith_manual.page.3": "套用掛鎖\n\n手持掛鎖對箱子、陷阱箱或木桶使用。第一個容器會成為根容器；已載入且由固定漏斗連接的支援容器會共用同一把鎖。",
+  "book.totem.locksmith_manual.page.4": "空白鑰匙\n\n發行實體鑰匙前先製作空白鑰匙。5 個鐵粒可製作 2 把空白鑰匙；下一頁顯示精確排列。",
+  "book.totem.locksmith_manual.recipe.page.2": "空白鑰匙\n\n",
+  "book.totem.locksmith_manual.page.5": "發行鑰匙\n\n看向 6 格內的上鎖容器或網路漏斗，主手或副手拿著空白鑰匙，輸入 /locksmith key bind。伺服器會消耗 1 把空白鑰匙並發行綁定到該鎖的已綁定鑰匙。",
+  "book.totem.locksmith_manual.page.6": "使用鑰匙\n\n有效的已綁定鑰匙必須留在主手或副手才會授權。鑰匙可個別撤銷，也能整批輪替。Blocked 玩家即使持有有效實體鑰匙仍會被拒絕。",
+  "book.totem.locksmith_manual.page.7": "權限角色\n\nOwner 擁有完整控制權；Manager 可維護 User 與一般鑰匙；User 依目前存取模式取得權限。Blocked 會覆蓋 User、好友、公開權限與鑰匙。",
+  "book.totem.locksmith_manual.page.8": "網路與自動化\n\n同一把鎖內部的漏斗搬運會正常運作；跨越鎖邊界的放入與取出會依 Automation Mode 判定。拆掉中間漏斗後，只保留根容器那一側的鎖。",
+  "book.totem.locksmith_manual.page.9": "拆鎖與回收\n\n使用 /locksmith remove 拆鎖會歸還 1 把掛鎖。把一把已綁定鑰匙單獨放入合成格，可回收成 1 把空白鑰匙。非 Owner 破壞容器仍依原版規則處理，並可送出稽核事件。",
+  "book.totem.locksmith_manual.recipe.loading": "正在載入伺服器配方…",
+  "book.totem.locksmith_manual.recipe.unavailable": "此伺服器目前沒有這個配方",
+  "book.totem.locksmith_manual.recipe.live": "伺服器即時配方"
 }
