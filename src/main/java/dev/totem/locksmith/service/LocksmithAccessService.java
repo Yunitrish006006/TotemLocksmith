@@ -1,5 +1,6 @@
 package dev.totem.locksmith.service;
 
+import dev.totem.core.api.v1.social.TotemFriendshipApi;
 import dev.totem.locksmith.component.KeyBinding;
 import dev.totem.locksmith.component.LocksmithDataComponents;
 import dev.totem.locksmith.domain.AccessActor;
@@ -9,7 +10,6 @@ import dev.totem.locksmith.domain.LockAccessPolicy;
 import dev.totem.locksmith.domain.LockLocation;
 import dev.totem.locksmith.domain.LockRecord;
 import dev.totem.locksmith.domain.LockState;
-import dev.totem.locksmith.integration.NexusFriendshipBridge;
 import dev.totem.locksmith.persistence.LockMarkerAttachments;
 import dev.totem.locksmith.persistence.LocksmithSavedData;
 import dev.totem.locksmith.registry.LocksmithGameRules;
@@ -102,7 +102,7 @@ public final class LocksmithAccessService {
         Set<AccessActor.HeldKey> held = new HashSet<>();
         collectKey(player.getMainHandItem(), held);
         collectKey(player.getOffhandItem(), held);
-        boolean friend = NexusFriendshipBridge.areMutualFriends(
+        boolean friend = TotemFriendshipApi.areFriends(
                 player.level().getServer(), player.getUUID(), record.ownerId());
         return AccessActor.player(player.getUUID(), held, friend, false);
     }
