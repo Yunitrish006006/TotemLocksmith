@@ -10,6 +10,7 @@
     ],
     "fabric-gametest": [
       "dev.totem.locksmith.gametest.LocksmithNetworkGameTest",
+      "dev.totem.locksmith.gametest.LocksmithCoreFriendshipGameTest",
       "dev.totem.locksmith.menu.LocksmithManagementMenuGameTest"
     ],
     "fabric-client-gametest": [
