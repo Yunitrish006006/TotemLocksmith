@@ -53,6 +53,22 @@ jobs:
           ./gradlew -PtotemCoreJar="$CORE_JAR" \
             test assemble compileGametestJava runGameTest --no-daemon --stacktrace
 
+      - name: Client GUI GameTests
+        shell: bash
+        run: |
+          set -euo pipefail
+          xvfb-run -a ./gradlew -PtotemCoreJar="$CORE_JAR" \
+            runClientGameTest --no-daemon --stacktrace
+
+      - name: Upload Locksmith GUI screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: locksmith-gui-screenshots
+          path: build/run/clientGameTest/screenshots/*locksmith-management*.png
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Strict 16x16 asset dimensions
         shell: bash
         run: |
