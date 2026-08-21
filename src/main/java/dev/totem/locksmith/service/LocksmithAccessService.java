@@ -84,6 +84,17 @@ public final class LocksmithAccessService {
         return to.allowed(AccessOperation.INSERT, actor);
     }
 
+    public static boolean allowAutomationTransfer(
+            ServerLevel level,
+            BlockPos source,
+            BlockPos destination,
+            UUID operatorId
+    ) {
+        Endpoint from = endpoint(level, source);
+        Endpoint to = endpoint(level, destination);
+        return allowAutomationTransfer(from, to, operatorId);
+    }
+
     public static boolean allowAutomationAt(
             ServerLevel level,
             BlockPos position,
@@ -126,6 +137,23 @@ public final class LocksmithAccessService {
             return Endpoint.inconsistent();
         }
         return Endpoint.locked(resolved.record().orElseThrow());
+    }
+
+    private static Endpoint endpoint(ServerLevel level, BlockPos position) {
+        ResolvedLock resolved = resolve(level, position);
+        if (resolved.status() == ResolvedLock.Status.UNLOCKED) return Endpoint.unlocked();
+        if (resolved.status() == ResolvedLock.Status.INCONSISTENT || resolved.record().isEmpty()) {
+            return Endpoint.inconsistent();
+        }
+        return Endpoint.locked(resolved.record().orElseThrow());
+    }
+
+    private static boolean allowAutomationTransfer(Endpoint from, Endpoint to, UUID operatorId) {
+        if (from.lockId().isPresent() && from.lockId().equals(to.lockId())) return true;
+        AccessActor actor = operatorId == null
+                ? AccessActor.anonymousAutomation() : AccessActor.identifiedAutomation(operatorId);
+        return from.allowed(AccessOperation.EXTRACT, actor)
+                && to.allowed(AccessOperation.INSERT, actor);
     }
 
     private record Endpoint(Optional<UUID> lockId, Optional<LockRecord> record, boolean consistent) {
