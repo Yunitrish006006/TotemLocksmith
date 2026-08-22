@@ -97,6 +97,42 @@ class LockAccessPolicyTest {
                 AccessActor.player(ACTOR, Set.of(), false, false), AccessOperation.BREAK).breakDisposition());
     }
 
+    @Test
+    void automationMatrixDoesNotReusePlayerAccessGrants() {
+        MemberEntry manager = new MemberEntry(ACTOR, "Manager", MemberRole.MANAGER);
+        UUID userId = UUID.fromString("65c42ea8-30b5-4e36-8ad7-0d1064e6dabb");
+        UUID blockedId = UUID.fromString("d444f2b7-6f24-4ad0-9155-606548910511");
+        List<MemberEntry> members = List.of(
+                manager,
+                new MemberEntry(userId, "User", MemberRole.USER),
+                new MemberEntry(blockedId, "Blocked", MemberRole.BLOCKED)
+        );
+
+        LockRecord deny = record(AccessMode.PUBLIC, AutomationMode.DENY, members, List.of(), 0);
+        assertFalse(LockAccessPolicy.evaluate(deny,
+                AccessActor.identifiedAutomation(OWNER), AccessOperation.EXTRACT).allowed());
+        assertFalse(LockAccessPolicy.evaluate(deny,
+                AccessActor.identifiedAutomation(ACTOR), AccessOperation.INSERT).allowed());
+
+        LockRecord trusted = deny.withModes(AccessMode.PUBLIC, AutomationMode.TRUSTED);
+        assertTrue(LockAccessPolicy.evaluate(trusted,
+                AccessActor.identifiedAutomation(OWNER), AccessOperation.EXTRACT).allowed());
+        assertTrue(LockAccessPolicy.evaluate(trusted,
+                AccessActor.identifiedAutomation(ACTOR), AccessOperation.INSERT).allowed());
+        assertFalse(LockAccessPolicy.evaluate(trusted,
+                AccessActor.identifiedAutomation(userId), AccessOperation.INSERT).allowed());
+        assertFalse(LockAccessPolicy.evaluate(trusted,
+                AccessActor.anonymousAutomation(), AccessOperation.INSERT).allowed());
+
+        LockRecord all = deny.withModes(AccessMode.PRIVATE, AutomationMode.ALL);
+        assertTrue(LockAccessPolicy.evaluate(all,
+                AccessActor.anonymousAutomation(), AccessOperation.EXTRACT).allowed());
+        assertTrue(LockAccessPolicy.evaluate(all,
+                AccessActor.identifiedAutomation(userId), AccessOperation.INSERT).allowed());
+        assertFalse(LockAccessPolicy.evaluate(all,
+                AccessActor.identifiedAutomation(blockedId), AccessOperation.INSERT).allowed());
+    }
+
     private static LockRecord record(
             AccessMode access,
             AutomationMode automation,

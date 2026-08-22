@@ -31,28 +31,37 @@ public final class LockAccessPolicy {
                     owner ? "owner" : "non_owner_alert"
             );
         }
-        if (actor.administrator() || actor.kind() == AccessActor.Kind.ADMIN) {
-            return AccessDecision.allow("administrator");
-        }
-        if (owner) return AccessDecision.allow("owner");
+        boolean automation = actor.kind() == AccessActor.Kind.ANONYMOUS_AUTOMATION
+                || actor.kind() == AccessActor.Kind.IDENTIFIED_AUTOMATION;
+        MemberRole role = actorId == null ? null
+                : record.member(actorId).map(MemberEntry::role).orElse(null);
 
-        MemberRole role = actorId == null ? null : record.member(actorId).map(MemberEntry::role).orElse(null);
-        if (role == MemberRole.BLOCKED) return AccessDecision.deny("blocked");
-        if (role == MemberRole.MANAGER) return AccessDecision.allow("manager");
-
-        if (actor.kind() == AccessActor.Kind.ANONYMOUS_AUTOMATION
-                || actor.kind() == AccessActor.Kind.IDENTIFIED_AUTOMATION) {
+        // Automation deliberately has a separate trust model from direct player
+        // interaction. In particular, an owner's UUID must not bypass DENY and
+        // a normal allow-listed USER must not satisfy TRUSTED.
+        if (automation) {
             if (operation != AccessOperation.INSERT && operation != AccessOperation.EXTRACT) {
                 return AccessDecision.deny("automation_operation");
             }
             return switch (record.automationMode()) {
                 case DENY -> AccessDecision.deny("automation_denied");
-                case TRUSTED -> actor.kind() == AccessActor.Kind.IDENTIFIED_AUTOMATION
+                case TRUSTED -> owner || role == MemberRole.MANAGER
                         ? AccessDecision.allow("trusted_automation")
-                        : AccessDecision.deny("automation_unidentified");
-                case ALL -> AccessDecision.allow("automation_all");
+                        : AccessDecision.deny(actorId == null
+                                ? "automation_unidentified" : "automation_untrusted");
+                case ALL -> role == MemberRole.BLOCKED
+                        ? AccessDecision.deny("blocked")
+                        : AccessDecision.allow("automation_all");
             };
         }
+
+        if (actor.administrator() || actor.kind() == AccessActor.Kind.ADMIN) {
+            return AccessDecision.allow("administrator");
+        }
+        if (owner) return AccessDecision.allow("owner");
+
+        if (role == MemberRole.BLOCKED) return AccessDecision.deny("blocked");
+        if (role == MemberRole.MANAGER) return AccessDecision.allow("manager");
 
         if (operation == AccessOperation.CONFIGURE) return AccessDecision.deny("owner_or_manager_only");
         boolean key = actor.heldKeys().stream().anyMatch(held -> held.lockId().equals(record.id())

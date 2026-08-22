@@ -2,6 +2,7 @@ package dev.totem.locksmith.api.v1;
 
 import dev.totem.locksmith.domain.AccessOperation;
 import dev.totem.locksmith.service.LocksmithAccessService;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -15,6 +16,17 @@ public final class LocksmithAutomationApi {
 
     public static boolean mayTransfer(Container source, Container destination, UUID operatorId) {
         return LocksmithAccessService.allowAutomationTransfer(source, destination, operatorId);
+    }
+
+    /** Position-based route check used when vanilla exposes a combined container wrapper. */
+    public static boolean mayTransfer(
+            ServerLevel level,
+            BlockPos source,
+            BlockPos destination,
+            UUID operatorId
+    ) {
+        return LocksmithAccessService.allowAutomationTransfer(
+                level, source, destination, operatorId);
     }
 
     public static boolean mayExtract(Container source, UUID operatorId) {

@@ -2,8 +2,14 @@ package dev.totem.locksmith.gametest;
 
 import dev.totem.core.api.v1.event.LockedContainerNetworkBrokenEvent;
 import dev.totem.core.api.v1.event.TotemEventBus;
+import dev.totem.locksmith.api.v1.LocksmithAutomationApi;
+import dev.totem.locksmith.api.v1.LocksmithPlayerAccessApi;
+import dev.totem.locksmith.domain.AccessMode;
+import dev.totem.locksmith.domain.AutomationMode;
 import dev.totem.locksmith.domain.LockLocation;
 import dev.totem.locksmith.domain.LockRecord;
+import dev.totem.locksmith.domain.MemberEntry;
+import dev.totem.locksmith.domain.MemberRole;
 import dev.totem.locksmith.persistence.LockMarkerAttachments;
 import dev.totem.locksmith.persistence.LocksmithSavedData;
 import dev.totem.locksmith.registry.LocksmithItems;
@@ -34,6 +40,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public final class LocksmithNetworkGameTest {
     private static final BlockPos ROOT_CHEST = new BlockPos(1, 3, 1);
@@ -139,6 +146,114 @@ public final class LocksmithNetworkGameTest {
                 "Internal same-lock transfer was denied in DENY mode");
         require(helper, !LocksmithAccessService.allowAutomationTransfer(root, unlocked),
                 "Boundary extraction escaped a DENY network");
+        cleanup(fixture);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void routeApiHonorsAutomationModeAndOperatorRoleMatrix(GameTestHelper helper) {
+        Fixture fixture = fixture(helper);
+        BlockPos source = helper.absolutePos(ROOT_CHEST);
+        BlockPos sameLockDestination = helper.absolutePos(DESTINATION);
+        BlockPos unlocked = helper.absolutePos(new BlockPos(4, 2, 1));
+        helper.setBlock(new BlockPos(4, 2, 1), Blocks.CHEST);
+
+        UUID manager = UUID.randomUUID();
+        UUID user = UUID.randomUUID();
+        UUID blocked = UUID.randomUUID();
+        UUID unknown = UUID.randomUUID();
+        List<MemberEntry> members = List.of(
+                new MemberEntry(manager, "Manager", MemberRole.MANAGER),
+                new MemberEntry(user, "User", MemberRole.USER),
+                new MemberEntry(blocked, "Blocked", MemberRole.BLOCKED));
+        LocksmithSavedData data = LocksmithSavedData.forServer(helper.getLevel().getServer());
+        LockRecord current = fixture.record();
+        LockRecord withMembers = current.withMembers(members);
+        require(helper, data.replace(current, withMembers), "Could not install route role fixture");
+        current = withMembers;
+
+        require(helper, LocksmithAutomationApi.mayTransfer(
+                        helper.getLevel(), source, sameLockDestination, unknown),
+                "Same-lock internal transfer did not bypass the DENY boundary");
+        require(helper, !LocksmithAutomationApi.mayTransfer(
+                        helper.getLevel(), source, unlocked, fixture.owner().getUUID()),
+                "DENY allowed owner automation across a protected boundary");
+        require(helper, !LocksmithAutomationApi.mayTransfer(
+                        helper.getLevel(), source, unlocked, null),
+                "DENY allowed anonymous automation across a protected boundary");
+
+        LockRecord trusted = current.withModes(AccessMode.PRIVATE, AutomationMode.TRUSTED);
+        require(helper, data.replace(current, trusted), "Could not enable TRUSTED automation");
+        current = trusted;
+        require(helper, LocksmithAutomationApi.mayTransfer(
+                        helper.getLevel(), source, unlocked, fixture.owner().getUUID()),
+                "TRUSTED rejected owner automation");
+        require(helper, LocksmithAutomationApi.mayTransfer(
+                        helper.getLevel(), source, unlocked, manager),
+                "TRUSTED rejected manager automation");
+        require(helper, !LocksmithAutomationApi.mayTransfer(
+                        helper.getLevel(), source, unlocked, user),
+                "TRUSTED accepted user automation");
+        require(helper, !LocksmithAutomationApi.mayTransfer(
+                        helper.getLevel(), source, unlocked, blocked),
+                "TRUSTED accepted blocked automation");
+        require(helper, !LocksmithAutomationApi.mayTransfer(
+                        helper.getLevel(), source, unlocked, unknown),
+                "TRUSTED accepted an unknown operator");
+        require(helper, !LocksmithAutomationApi.mayTransfer(
+                        helper.getLevel(), source, unlocked, null),
+                "TRUSTED accepted anonymous automation");
+
+        LockRecord all = current.withModes(AccessMode.PRIVATE, AutomationMode.ALL);
+        require(helper, data.replace(current, all), "Could not enable ALL automation");
+        current = all;
+        for (UUID allowed : List.of(fixture.owner().getUUID(), manager, user, unknown)) {
+            require(helper, LocksmithAutomationApi.mayTransfer(
+                            helper.getLevel(), source, unlocked, allowed),
+                    "ALL rejected an allowed identified operator");
+            require(helper, LocksmithAutomationApi.mayTransfer(
+                            helper.getLevel(), unlocked, source, allowed),
+                    "ALL rejected an allowed destination-boundary operator");
+        }
+        require(helper, LocksmithAutomationApi.mayTransfer(
+                        helper.getLevel(), source, unlocked, null),
+                "ALL rejected anonymous automation");
+        require(helper, !LocksmithAutomationApi.mayTransfer(
+                        helper.getLevel(), source, unlocked, blocked),
+                "ALL accepted a blocked operator");
+        require(helper, !LocksmithAutomationApi.mayTransfer(
+                        helper.getLevel(), unlocked, source, blocked),
+                "ALL accepted a blocked destination-boundary operator");
+
+        cleanup(new Fixture(fixture.owner(), current));
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void playerAccessApiUsesTheActualServerPlayerAndLevel(GameTestHelper helper) {
+        Fixture fixture = fixture(helper);
+        BlockPos locked = helper.absolutePos(ROOT_CHEST);
+        BlockPos unlocked = helper.absolutePos(new BlockPos(4, 2, 1));
+        helper.setBlock(new BlockPos(4, 2, 1), Blocks.CHEST);
+        ServerPlayer stranger = survivalPlayer(helper);
+
+        require(helper, LocksmithPlayerAccessApi.mayExtract(
+                        fixture.owner(), helper.getLevel(), locked),
+                "Player API rejected the lock owner");
+        require(helper, LocksmithPlayerAccessApi.mayInsert(
+                        fixture.owner(), helper.getLevel(), locked),
+                "Player API rejected owner insertion");
+        require(helper, !LocksmithPlayerAccessApi.mayExtract(
+                        stranger, helper.getLevel(), locked),
+                "Player API accepted an unauthorised stranger");
+        require(helper, LocksmithPlayerAccessApi.mayInsert(
+                        stranger, helper.getLevel(), unlocked),
+                "Player API rejected an unlocked container");
+        require(helper, !LocksmithPlayerAccessApi.mayInsert(
+                        stranger, helper.getLevel().getServer().getLevel(Level.NETHER), locked),
+                "Player API accepted a player/level mismatch");
+
+        stranger.discard();
         cleanup(fixture);
         helper.succeed();
     }
