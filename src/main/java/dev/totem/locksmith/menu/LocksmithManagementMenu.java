@@ -41,7 +41,7 @@ public final class LocksmithManagementMenu extends AbstractContainerMenu {
     public static final int KEY_REVOKE_BASE = 400;
     public static final int MAX_ROWS = 32;
 
-    private final LocksmithManagementOpenData snapshot;
+    private LocksmithManagementOpenData snapshot;
 
     public LocksmithManagementMenu(
             MenuType<?> type,
@@ -55,6 +55,16 @@ public final class LocksmithManagementMenu extends AbstractContainerMenu {
 
     public LocksmithManagementOpenData snapshot() {
         return snapshot;
+    }
+
+    /** Applies a newer, already-authorized read-only Observer projection. */
+    public boolean applyObserverSnapshot(LocksmithManagementOpenData replacement) {
+        if (replacement == null || !snapshot.lockId().equals(replacement.lockId())
+                || replacement.revision() < snapshot.revision()) {
+            return false;
+        }
+        snapshot = replacement;
+        return true;
     }
 
     @Override

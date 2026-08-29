@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "name": "Totem Locksmith GameTests",
   "environment": "*",
+  "mixins": [
+    "totem-locksmith-gametest.client.mixins.json"
+  ],
   "entrypoints": {
     "main": [
       "dev.totem.locksmith.gametest.LocksmithRestartProbe"
@@ -14,6 +17,7 @@
       "dev.totem.locksmith.menu.LocksmithManagementMenuGameTest"
     ],
     "fabric-client-gametest": [
+      "dev.totem.locksmith.client.LocksmithObserverProviderClientGameTest",
       "dev.totem.locksmith.client.LocksmithManagementVisualGameTest"
     ]
   },

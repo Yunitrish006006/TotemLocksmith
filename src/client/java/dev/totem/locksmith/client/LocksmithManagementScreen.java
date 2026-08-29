@@ -6,9 +6,13 @@ import dev.totem.locksmith.domain.MemberRole;
 import dev.totem.locksmith.menu.LocksmithManagementMenu;
 import dev.totem.locksmith.menu.LocksmithManagementOpenData;
 import dev.totem.locksmith.registry.LocksmithItems;
+import dev.totem.core.api.v1.client.observer.ObserverReadOnlyScreen;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.PreeditEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -16,7 +20,8 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 
 /** Compact, item-first front end for the server-authoritative lock control plane. */
-public final class LocksmithManagementScreen extends AbstractContainerScreen<LocksmithManagementMenu> {
+public final class LocksmithManagementScreen extends AbstractContainerScreen<LocksmithManagementMenu>
+        implements ObserverReadOnlyScreen {
     private static final int PANEL_WIDTH = 286;
     private static final int PANEL_HEIGHT = 224;
     private static final int TAB_Y = 34;
@@ -28,9 +33,18 @@ public final class LocksmithManagementScreen extends AbstractContainerScreen<Loc
     private int memberScroll;
     private int candidateScroll;
     private int keyScroll;
+    private final boolean observerReadOnly;
+    private final Runnable observerStop;
 
     public LocksmithManagementScreen(LocksmithManagementMenu menu, Inventory inventory, Component title) {
+        this(menu, inventory, title, false, () -> { });
+    }
+
+    public LocksmithManagementScreen(LocksmithManagementMenu menu, Inventory inventory, Component title,
+                                     boolean observerReadOnly, Runnable observerStop) {
         super(menu, inventory, title, PANEL_WIDTH, PANEL_HEIGHT);
+        this.observerReadOnly = observerReadOnly;
+        this.observerStop = observerStop;
     }
 
     @Override
@@ -52,6 +66,7 @@ public final class LocksmithManagementScreen extends AbstractContainerScreen<Loc
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubled) {
+        if (observerReadOnly) return true;
         if (event.button() != 0) {
             return super.mouseClicked(event, doubled);
         }
@@ -74,6 +89,7 @@ public final class LocksmithManagementScreen extends AbstractContainerScreen<Loc
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        if (observerReadOnly) return true;
         if (verticalAmount == 0) return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
         int delta = verticalAmount < 0 ? 1 : -1;
         LocksmithManagementOpenData snapshot = menu.snapshot();
@@ -90,6 +106,39 @@ public final class LocksmithManagementScreen extends AbstractContainerScreen<Loc
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+    }
+
+    @Override public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+        return observerReadOnly || super.mouseDragged(event, dragX, dragY);
+    }
+    @Override public boolean mouseReleased(MouseButtonEvent event) {
+        return observerReadOnly || super.mouseReleased(event);
+    }
+    @Override public boolean keyPressed(KeyEvent event) {
+        if (!observerReadOnly) return super.keyPressed(event);
+        if (event.key() == 256) onClose();
+        return true;
+    }
+    @Override public boolean charTyped(CharacterEvent event) {
+        return observerReadOnly || super.charTyped(event);
+    }
+    @Override public boolean preeditUpdated(PreeditEvent event) {
+        return observerReadOnly || super.preeditUpdated(event);
+    }
+    @Override public void onClose() {
+        if (observerReadOnly) observerStop.run(); else super.onClose();
+    }
+    @Override public boolean totem$isObserverReadOnly() { return observerReadOnly; }
+
+    public LocksmithManagementOpenData observerSnapshot() { return menu.snapshot(); }
+
+    /** Formal update path used by the owning module's read-only Observer provider. */
+    public boolean applyObserverSnapshot(LocksmithManagementOpenData snapshot) {
+        if (!observerReadOnly || !menu.applyObserverSnapshot(snapshot)) return false;
+        memberScroll = clampScroll(memberScroll, snapshot.members().size());
+        candidateScroll = clampScroll(candidateScroll, snapshot.candidates().size());
+        keyScroll = clampScroll(keyScroll, snapshot.keys().size());
+        return true;
     }
 
     private void drawPanel(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
