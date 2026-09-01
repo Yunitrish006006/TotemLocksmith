@@ -57,16 +57,25 @@ jobs:
         run: |
           set -euo pipefail
           v="$(sed -n 's/^mod_version=//p' gradle.properties)"; a="$(sed -n 's/^archives_base_name=//p' gradle.properties)"; mc="$(sed -n 's/^minecraft_version=//p' gradle.properties)"; artifact="build/libs/${a}-${v}.jar"
-          test -n "$MODRINTH_TOKEN"; test -n "$MODRINTH_PROJECT_ID"; test -f "$artifact"
-          unzip -p "$artifact" fabric.mod.json >/tmp/fabric.mod.json
-          jq -e --arg id "$MODULE_ID" --arg v "$v" --arg mc "~${mc}" --arg core '>=0.7.15 <0.8.0' '.id==$id and .version==$v and .depends.minecraft==$mc and .depends["totem-core"]==$core' /tmp/fabric.mod.json >/dev/null
+          [[ -n "$MODRINTH_TOKEN" ]] || { echo 'MODRINTH_TOKEN is empty.' >&2; exit 1; }
+          [[ -n "$MODRINTH_PROJECT_ID" ]] || { echo 'MODRINTH_PROJECT_ID is empty.' >&2; exit 1; }
+          [[ -f "$artifact" ]] || { echo "Release artifact is missing: ${artifact}" >&2; ls -la build/libs >&2 || true; exit 1; }
+          unzip -p "$artifact" fabric.mod.json >/tmp/fabric.mod.json || { echo "Cannot read fabric.mod.json from ${artifact}." >&2; exit 1; }
+          if ! jq -e --arg id "$MODULE_ID" --arg v "$v" --arg mc "~${mc}" --arg core '>=0.7.15 <0.8.0' '.id==$id and .version==$v and .depends.minecraft==$mc and .depends["totem-core"]==$core' /tmp/fabric.mod.json >/dev/null; then
+            jq '{id,version,depends}' /tmp/fabric.mod.json >&2 || true
+            echo 'Release artifact metadata did not match the expected module contract.' >&2
+            exit 1
+          fi
           api=https://api.modrinth.com/v2
           args=(--silent --show-error --retry 3 -H "Authorization: ${MODRINTH_TOKEN}" -H "User-Agent: Yunitrish006006/${MODULE_ID}-publisher/2.0")
           modrinth_request() {
             local output="$1"
             shift
             local status
-            status="$(curl "${args[@]}" --output "$output" --write-out '%{http_code}' "$@")"
+            if ! status="$(curl "${args[@]}" --output "$output" --write-out '%{http_code}' "$@")"; then
+              echo 'Modrinth API transport failed.' >&2
+              return 1
+            fi
             if [[ ! "$status" =~ ^2 ]]; then
               echo "Modrinth API request failed with HTTP ${status}." >&2
               jq -r 'if type == "object" then "\(.error // "unknown_error"): \(.description // .message // "No description returned")" else "No structured error returned" end' "$output" >&2 || true
@@ -101,6 +110,17 @@ jobs:
             id="$(jq -er .id /tmp/version.json)"
           fi
           modrinth_request /tmp/remote.json "$api/version/$id"
+          if ! jq -e --arg p "$p" --arg v "$v" --arg f "$(basename "$artifact")" --arg sha "$sha" '.project_id==$p and .version_number==$v and (([.files[]|select(.primary==true)][0]//.files[0]).filename==$f) and (([.files[]|select(.primary==true)][0]//.files[0]).hashes.sha512==$sha)' /tmp/remote.json >/dev/null; then
+            jq '{project_id,version_number,game_versions,loaders,files:[.files[]|{filename,primary,sha512:.hashes.sha512}]}' /tmp/remote.json >&2
+            echo 'Existing Modrinth version identity or artifact did not match; refusing metadata repair.' >&2
+            exit 1
+          fi
+          if ! jq -e --arg mc "$mc" '.game_versions==[$mc] and .loaders==["fabric"]' /tmp/remote.json >/dev/null; then
+            repair="$(jq -nc --arg mc "$mc" '{game_versions:[$mc],loaders:["fabric"]}')"
+            modrinth_request /tmp/modify-version.json -X PATCH -H 'Content-Type: application/json' --data "$repair" "$api/version/$id"
+            modrinth_request /tmp/remote.json "$api/version/$id"
+            echo "Repaired Modrinth platform metadata for ${MODULE_ID} ${v}."
+          fi
           if ! jq -e --arg p "$p" --arg v "$v" --arg mc "$mc" --arg f "$(basename "$artifact")" --arg sha "$sha" '.project_id==$p and .version_number==$v and .game_versions==[$mc] and .loaders==["fabric"] and (([.files[]|select(.primary==true)][0]//.files[0]).filename==$f) and (([.files[]|select(.primary==true)][0]//.files[0]).hashes.sha512==$sha)' /tmp/remote.json >/dev/null; then
             jq '{project_id,version_number,game_versions,loaders,files:[.files[]|{filename,primary,sha512:.hashes.sha512}]}' /tmp/remote.json >&2
             echo 'Published Modrinth version metadata did not match the release artifact.' >&2
