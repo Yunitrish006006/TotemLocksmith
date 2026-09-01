@@ -1,0 +1,15 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_copper_ingot": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": { "items": [{ "items": "minecraft:copper_ingot" }] }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": { "recipe": "totem:locksmith/key_blank_copper" }
+    }
+  },
+  "requirements": [["has_copper_ingot", "has_the_recipe"]],
+  "rewards": { "recipes": ["totem:locksmith/key_blank_copper"] }
+}
