@@ -116,8 +116,9 @@ jobs:
             exit 1
           fi
           if ! jq -e --arg mc "$mc" '.game_versions==[$mc] and .loaders==["fabric"]' /tmp/remote.json >/dev/null; then
-            repair="$(jq -nc --arg mc "$mc" '{game_versions:[$mc],loaders:["fabric"]}')"
-            modrinth_request /tmp/modify-version.json -X PATCH -H 'Content-Type: application/json' --data "$repair" "$api/version/$id"
+            modrinth_request /tmp/modify-loaders.json -X PATCH -H 'Content-Type: application/json' --data '{"loaders":["fabric"]}' "$api/version/$id"
+            repair="$(jq -nc --arg mc "$mc" '{game_versions:[$mc]}')"
+            modrinth_request /tmp/modify-game-versions.json -X PATCH -H 'Content-Type: application/json' --data "$repair" "$api/version/$id"
             modrinth_request /tmp/remote.json "$api/version/$id"
             echo "Repaired Modrinth platform metadata for ${MODULE_ID} ${v}."
           fi
