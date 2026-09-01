@@ -15,7 +15,7 @@ def locksmithRestartProbeMarkerDirectory = providers.gradleProperty('totemLocksm
         .orNull
 
 def totemCoreJar = file(providers.gradleProperty('totemCoreJar')
-        .getOrElse('../TotemCore/build/libs/totem-core-0.7.12.jar'))
+        .getOrElse('../TotemCore/build/libs/totem-core-0.7.15.jar'))
 
 loom {
     splitEnvironmentSourceSets()

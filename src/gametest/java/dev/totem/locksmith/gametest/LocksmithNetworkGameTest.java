@@ -1,5 +1,6 @@
 package dev.totem.locksmith.gametest;
 
+import dev.totem.core.api.v1.gamerule.TotemGameRuleCategories;
 import dev.totem.core.api.v1.event.LockedContainerNetworkBrokenEvent;
 import dev.totem.core.api.v1.event.TotemEventBus;
 import dev.totem.locksmith.api.v1.LocksmithAutomationApi;
@@ -13,6 +14,7 @@ import dev.totem.locksmith.domain.MemberRole;
 import dev.totem.locksmith.persistence.LockMarkerAttachments;
 import dev.totem.locksmith.persistence.LocksmithSavedData;
 import dev.totem.locksmith.registry.LocksmithItems;
+import dev.totem.locksmith.registry.LocksmithGameRules;
 import dev.totem.locksmith.service.LockBreakResult;
 import dev.totem.locksmith.service.LocksmithAccessService;
 import dev.totem.locksmith.service.LocksmithAuthority;
@@ -20,6 +22,7 @@ import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -28,6 +31,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gamerules.GameRuleType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.HopperBlock;
@@ -56,6 +60,20 @@ public final class LocksmithNetworkGameTest {
                 net.minecraft.core.registries.Registries.RECIPE,
                 net.minecraft.resources.Identifier.parse("totem:locksmith/padlock"))).isPresent(),
                 "Padlock recipe was not loaded");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void physicalKeyRuleUsesSharedCategoryAndStableContract(GameTestHelper helper) {
+        var rule = LocksmithGameRules.REQUIRE_PHYSICAL_KEYS;
+        require(helper, rule.category() == TotemGameRuleCategories.TOTEM,
+                "Physical-key rule is not in the shared Totem category");
+        require(helper, rule.getIdentifier().equals(
+                        Identifier.fromNamespaceAndPath("totem", "locksmith_require_physical_keys")),
+                "Physical-key rule identifier changed");
+        require(helper, rule.defaultValue(), "Physical-key rule default changed");
+        require(helper, rule.valueClass() == Boolean.class && rule.gameRuleType() == GameRuleType.BOOL,
+                "Physical-key rule value type changed");
         helper.succeed();
     }
 

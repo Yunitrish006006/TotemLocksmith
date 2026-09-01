@@ -1,5 +1,7 @@
 {
   "itemGroup.totem_locksmith.main": "Totem Locksmith",
+  "gamerule.totem.locksmith_require_physical_keys": "Require physical Locksmith keys",
+  "gamerule.totem.locksmith_require_physical_keys.description": "Require non-owners and non-managers to hold a valid bound key when accessing a locked container network.",
   "item.totem.locksmith.padlock": "Padlock",
   "item.totem.locksmith.key_blank": "Key Blank",
   "item.totem.locksmith.bound_key": "Bound Key",

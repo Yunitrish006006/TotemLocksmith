@@ -2,6 +2,8 @@
 
 Totem Locksmith is the server-authoritative fixed-container protection module for the Totem platform.
 
+The current release is **0.1.7** and requires TotemCore **>=0.7.15 <0.8.0**.
+
 ## Features
 
 - One physical Padlock protects a Chest, Trapped Chest, Barrel, double chest, or an entire fixed-Hopper-connected storage network.
@@ -17,12 +19,20 @@ Totem Locksmith is the server-authoritative fixed-container protection module fo
 3. Hold a Book or the Totem manual and use it on a Chest to record the Locksmith chapter.
 4. Sneak-use a locked root container with an empty hand to inspect its current policy; use `/locksmith` to manage it.
 
+## World Rule
+
+Locksmith contributes `totem:locksmith_require_physical_keys` to the shared
+Totem category in Minecraft's native Game Rules screens. With Traditional
+Chinese selected, the rule appears as `需要實體鎖匠鑰匙` with a localized
+description. The identifier, default value, and server-authoritative behavior
+remain compatible with existing worlds.
+
 ## Requirements
 
 - Minecraft 26.2
 - Fabric Loader 0.19.3+
 - Fabric API
-- Totem Core 0.6.0 exactly
+- Totem Core >=0.7.15 and <0.8.0
 - Java 25+
 
 ## Performance

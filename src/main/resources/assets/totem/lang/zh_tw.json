@@ -1,5 +1,7 @@
 {
   "itemGroup.totem_locksmith.main": "圖騰鎖匠",
+  "gamerule.totem.locksmith_require_physical_keys": "需要實體鎖匠鑰匙",
+  "gamerule.totem.locksmith_require_physical_keys.description": "非擁有者與非管理者存取上鎖容器網路時，必須手持有效的已綁定鑰匙。",
   "item.totem.locksmith.padlock": "掛鎖",
   "item.totem.locksmith.key_blank": "空白鑰匙",
   "item.totem.locksmith.bound_key": "已綁定鑰匙",
