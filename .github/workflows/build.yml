@@ -41,7 +41,7 @@ jobs:
           chmod +x gradlew .lockstep/TotemCore/gradlew
           ./.lockstep/TotemCore/gradlew -p .lockstep/TotemCore jar --no-daemon --stacktrace
           core_version="$(sed -n 's/^mod_version=//p' .lockstep/TotemCore/gradle.properties)"
-          test "$core_version" = '0.7.15'
+          test "$core_version" = '0.7.18'
           core_jar="${GITHUB_WORKSPACE}/.lockstep/TotemCore/build/libs/totem-core-${core_version}.jar"
           test -f "$core_jar"
           echo "CORE_JAR=$core_jar" >> "$GITHUB_ENV"

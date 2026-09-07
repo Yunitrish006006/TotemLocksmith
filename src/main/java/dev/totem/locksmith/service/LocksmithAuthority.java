@@ -152,7 +152,7 @@ public final class LocksmithAuthority {
         if (!player.getAbilities().instabuild) player.getItemInHand(hand).shrink(1);
         player.sendOverlayMessage(Component.translatable(
                 "message.totem.locksmith.applied", record.logicalContainerCount(), record.connectors().size()));
-        award(player, "deadrecall:locksmith/locked_network");
+        award(player, "totem:locksmith/locked_network");
         return true;
     }
 

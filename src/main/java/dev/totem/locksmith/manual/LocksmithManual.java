@@ -34,7 +34,7 @@ public final class LocksmithManual {
     public static void register() {
         TotemModuleManualSource.register(
                 SECTION,
-                Identifier.fromNamespaceAndPath("deadrecall", "locksmith_manual"),
+                Identifier.fromNamespaceAndPath("totem", "locksmith_manual"),
                 state -> state.is(Blocks.CHEST) || state.is(Blocks.TRAPPED_CHEST) || state.is(Blocks.BARREL)
         );
     }

@@ -1,5 +1,5 @@
 {
-  "parent": "deadrecall:locksmith_root",
+  "parent": "totem:locksmith_root",
   "criteria": {
     "has_manual": { "trigger": "minecraft:impossible" }
   },

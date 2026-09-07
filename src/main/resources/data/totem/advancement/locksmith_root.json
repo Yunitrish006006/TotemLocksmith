@@ -1,8 +1,11 @@
 {
-  "parent": "deadrecall:root",
+  "parent": "totem:root",
   "criteria": {
     "crafted_padlock": {
-      "trigger": "minecraft:impossible"
+      "conditions": {
+        "recipe_id": "totem:locksmith/padlock"
+      },
+      "trigger": "minecraft:recipe_crafted"
     }
   },
   "display": {

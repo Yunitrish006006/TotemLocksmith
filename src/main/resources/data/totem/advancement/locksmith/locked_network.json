@@ -1,5 +1,5 @@
 {
-  "parent": "deadrecall:locksmith_manual",
+  "parent": "totem:locksmith_manual",
   "criteria": {
     "locked_network": { "trigger": "minecraft:impossible" }
   },
