@@ -3,9 +3,10 @@
   "java": 25,
   "minecraft": "26.2",
   "artifact": "totem-locksmith-0.1.11.jar",
-  "sha512": "cb05a37059fc5de1a8a6c40885e3377176371876871b1591a55567a0154390f101fa1afe47b44c88d952a91113568ebff3577f27399bd16a1722b72afe803b22",
+  "sha512": "4645cb90022dc789fdccc1b92fc273b7557a0c1f9b29d5dbde2450e616ae3447ce2df6ee780e368944e2635f3afee920fcc05e258b60de1930567230912f2471",
   "unit_tests": 12,
   "core_dependency": ">=0.7.21 <0.8.0",
   "validation": "Versioned test, assemble and compileGametestJava passed locally. Previous source validation includes Nexus 108 server GameTests and VanillaTweaks/Alchemy en_us and zh_tw client tests, plus Alchemy/Core localized manual screenshots. Exact release commit CI is required by the publisher.",
-  "independent_review": "Independent source, localization and release workflow reviews completed; reported filename and whitespace fixes applied."
+  "independent_review": "Independent source, localization and release workflow reviews completed; reported filename and whitespace fixes applied.",
+  "reproducible_packaging": "Sorted Loom client-entry manifest and excluded empty directories. Rebuilt JAR preserves all CI-tested class/resource bytes and equivalent manifest attributes."
 }
