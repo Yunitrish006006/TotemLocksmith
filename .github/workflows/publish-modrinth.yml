@@ -6,11 +6,11 @@ on:
   workflow_dispatch:
     inputs:
       dry_run: {description: Validate without publishing, required: true, default: true, type: boolean}
-permissions: {contents: write}
+permissions: {contents: write, actions: read}
 concurrency: {group: 'modrinth-${{ github.workflow }}-${{ github.ref }}', cancel-in-progress: false}
 env:
   MODULE_ID: totem-locksmith
-  CORE_REF: f87cd10fe8aefce77925b9e75dad237f17f38966
+  CORE_REF: 077924318bf85fa5de7cda73ed0e96abe5df803b
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -43,12 +43,32 @@ jobs:
           set -euo pipefail
           chmod +x gradlew .lockstep/TotemCore/gradlew
           ./.lockstep/TotemCore/gradlew -p .lockstep/TotemCore jar --no-daemon --stacktrace
-          core="$(sed -n 's/^mod_version=//p' .lockstep/TotemCore/gradle.properties)"; test "$core" = 0.7.18
+          core="$(sed -n 's/^mod_version=//p' .lockstep/TotemCore/gradle.properties)"; test "$core" = 0.7.21
           core_jar="$GITHUB_WORKSPACE/.lockstep/TotemCore/build/libs/totem-core-${core}.jar"; test -f "$core_jar"
           ./gradlew -PtotemCoreJar="$core_jar" jar --no-daemon --stacktrace
           v="$(sed -n 's/^mod_version=//p' gradle.properties)"; a="$(sed -n 's/^archives_base_name=//p' gradle.properties)"; artifact="build/libs/${a}-${v}.jar"
           [[ -f "$artifact" ]] || ./gradlew -PtotemCoreJar="$core_jar" remapJar --no-daemon --stacktrace
           test -f "$artifact"
+      - name: Require successful Build for this commit
+        if: steps.release.outputs.should_publish == 'true' && steps.release.outputs.dry_run == 'false'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for attempt in {1..120}; do
+            runs="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/build.yml/runs?head_sha=${GITHUB_SHA}&event=push&per_page=10")"
+            latest="$(jq -c '.workflow_runs | sort_by(.run_number) | last // null' <<<"$runs")"
+            if [[ "$(jq -r '.status // empty' <<<"$latest")" == completed ]]; then
+              test "$(jq -r '.conclusion' <<<"$latest")" = success || { echo 'Build failed; refusing publication.' >&2; exit 1; }
+              echo "Verified Build for ${GITHUB_SHA}."
+              exit 0
+            fi
+            sleep 20
+          done
+          echo 'Timed out waiting for Build; refusing publication.' >&2
+          exit 1
+
       - name: Publish and verify
         id: modrinth
         if: steps.release.outputs.should_publish == 'true'
@@ -61,7 +81,7 @@ jobs:
           [[ -n "$MODRINTH_PROJECT_ID" ]] || { echo 'MODRINTH_PROJECT_ID is empty.' >&2; exit 1; }
           [[ -f "$artifact" ]] || { echo "Release artifact is missing: ${artifact}" >&2; ls -la build/libs >&2 || true; exit 1; }
           unzip -p "$artifact" fabric.mod.json >/tmp/fabric.mod.json || { echo "Cannot read fabric.mod.json from ${artifact}." >&2; exit 1; }
-          if ! jq -e --arg id "$MODULE_ID" --arg v "$v" --arg mc "~${mc}" --arg core '>=0.7.18 <0.8.0' '.id==$id and .version==$v and .depends.minecraft==$mc and .depends["totem-core"]==$core' /tmp/fabric.mod.json >/dev/null; then
+          if ! jq -e --arg id "$MODULE_ID" --arg v "$v" --arg mc "~${mc}" --arg core '>=0.7.21 <0.8.0' '.id==$id and .version==$v and .depends.minecraft==$mc and .depends["totem-core"]==$core' /tmp/fabric.mod.json >/dev/null; then
             jq '{id,version,depends}' /tmp/fabric.mod.json >&2 || true
             echo 'Release artifact metadata did not match the expected module contract.' >&2
             exit 1
@@ -96,6 +116,7 @@ jobs:
             modrinth_request /tmp/project.json "$api/project/${project_ref}"
           fi
           p="$(jq -er .id /tmp/project.json)"; sha="$(sha512sum "$artifact" | awk '{print $1}')"
+          test "$sha" = "$(jq -er .sha512 ".github/staging/release-validation-${v}.json")"
           if [[ "$DRY_RUN" == true ]]; then echo "version=$v" >> "$GITHUB_OUTPUT"; echo "project_id=$p" >> "$GITHUB_OUTPUT"; echo "sha512=$sha" >> "$GITHUB_OUTPUT"; exit 0; fi
           modrinth_request /tmp/versions.json "$api/project/${p}/version?include_changelog=false"; count="$(jq --arg v "$v" '[.[]|select(.version_number==$v)]|length' /tmp/versions.json)"
           if [[ "$count" != 0 ]]; then
@@ -105,8 +126,9 @@ jobs:
             [[ "$rsha" == "$sha" ]] || { echo "Existing Modrinth ${v} SHA-512 differs: remote=${rsha}, local=${sha}." >&2; exit 1; }
             echo "Verified byte-identical existing Modrinth ${MODULE_ID} ${v}."
           else
-            c="$(git log -1 --format=%B)"; data="$(jq -nc --arg n "${MODULE_ID} ${v}" --arg v "$v" --arg c "$c" --arg p "$p" --arg mc "$mc" '{name:$n,version_number:$v,changelog:$c,dependencies:[],game_versions:[$mc],version_type:"release",loaders:["fabric"],featured:false,status:"listed",project_id:$p,file_parts:["primary"],primary_file:"primary",environment:"client_and_server"}')"
-            modrinth_request /tmp/version.json -X POST "$api/version" -F "data=${data};type=application/json" -F "primary=@${artifact};filename=$(basename "$artifact");type=application/java-archive"
+            c="$(cat ".github/staging/modrinth-changelog-${v}.md")"; data="$(jq -nc --arg n "${MODULE_ID} ${v}" --arg v "$v" --arg c "$c" --arg p "$p" --arg mc "$mc" '{name:$n,version_number:$v,changelog:$c,dependencies:[{project_id:"P7dR8mSH",dependency_type:"required"},{file_name:"totem-core-0.7.21.jar",dependency_type:"required"}],game_versions:[$mc],version_type:"release",loaders:["fabric"],featured:false,status:"listed",project_id:$p,file_parts:["primary"],primary_file:"primary",environment:"client_and_server"}')"
+            printf '%s\n' "$data" >/tmp/version-create.json
+            modrinth_request /tmp/version.json -X POST "$api/version" -F 'data=</tmp/version-create.json;type=application/json' -F "primary=@${artifact};filename=$(basename "$artifact");type=application/java-archive"
             id="$(jq -er .id /tmp/version.json)"
           fi
           modrinth_request /tmp/remote.json "$api/version/$id"
@@ -127,6 +149,7 @@ jobs:
             echo 'Published Modrinth version metadata did not match the release artifact.' >&2
             exit 1
           fi
+          jq -e --rawfile notes ".github/staging/modrinth-changelog-${v}.md" '(.dependencies|length)==2 and any(.dependencies[]; .project_id=="P7dR8mSH" and .dependency_type=="required") and any(.dependencies[]; .file_name=="totem-core-0.7.21.jar" and .dependency_type=="required") and ((.changelog|sub("\n+$";""))==($notes|sub("\n+$";"")))' /tmp/remote.json >/dev/null
           echo "version=$v" >> "$GITHUB_OUTPUT"; echo "project_id=$p" >> "$GITHUB_OUTPUT"; echo "version_id=$id" >> "$GITHUB_OUTPUT"; echo "sha512=$sha" >> "$GITHUB_OUTPUT"
       - name: Submit project for public review
         if: steps.release.outputs.should_publish == 'true' && steps.release.outputs.dry_run == 'false'

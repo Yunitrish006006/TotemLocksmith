@@ -2,7 +2,7 @@
 
 Totem Locksmith is the server-authoritative fixed-container protection module for the Totem platform.
 
-The current release is **0.1.7** and requires TotemCore **>=0.7.15 <0.8.0**.
+The current release is **0.1.7** and requires TotemCore **>=0.7.21 <0.8.0**.
 
 ## Features
 
@@ -32,7 +32,7 @@ remain compatible with existing worlds.
 - Minecraft 26.2
 - Fabric Loader 0.19.3+
 - Fabric API
-- Totem Core >=0.7.15 and <0.8.0
+- Totem Core >=0.7.21 and <0.8.0
 - Java 25+
 
 ## Performance
