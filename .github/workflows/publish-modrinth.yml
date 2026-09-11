@@ -149,7 +149,7 @@ jobs:
             echo 'Published Modrinth version metadata did not match the release artifact.' >&2
             exit 1
           fi
-          jq -e --rawfile notes ".github/staging/modrinth-changelog-${v}.md" '(.dependencies|length)==2 and any(.dependencies[]; .project_id=="P7dR8mSH" and .dependency_type=="required") and any(.dependencies[]; .file_name=="totem-core-0.7.21.jar" and .dependency_type=="required") and ((.changelog|sub("\n+$";""))==($notes|sub("\n+$";"")))' /tmp/remote.json >/dev/null
+          jq -e --rawfile notes ".github/staging/modrinth-changelog-${v}.md" '(.dependencies|length)==2 and any(.dependencies[]; .project_id=="P7dR8mSH" and .dependency_type=="required") and any(.dependencies[]; .project_id==null and .version_id==null and (.file_name=="totem-core-0.7.21.jar" or .file_name==null) and .dependency_type=="required") and ((.changelog|sub("\n+$";""))==($notes|sub("\n+$";"")))' /tmp/remote.json >/dev/null
           echo "version=$v" >> "$GITHUB_OUTPUT"; echo "project_id=$p" >> "$GITHUB_OUTPUT"; echo "version_id=$id" >> "$GITHUB_OUTPUT"; echo "sha512=$sha" >> "$GITHUB_OUTPUT"
       - name: Submit project for public review
         if: steps.release.outputs.should_publish == 'true' && steps.release.outputs.dry_run == 'false'
