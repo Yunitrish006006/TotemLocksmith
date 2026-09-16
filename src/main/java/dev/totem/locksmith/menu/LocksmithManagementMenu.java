@@ -12,6 +12,7 @@ import dev.totem.locksmith.persistence.LocksmithSavedData;
 import dev.totem.locksmith.registry.LocksmithItems;
 import dev.totem.locksmith.service.LocksmithAuthority;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Prediction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
@@ -171,7 +172,7 @@ public final class LocksmithManagementMenu extends AbstractContainerMenu {
         key.set(LocksmithDataComponents.KEY_BINDING,
                 new KeyBinding(record.id(), keyId, record.keyEpoch()));
         if (!actor.getInventory().add(key)) {
-            actor.drop(key, false);
+            actor.drop(key, false, Prediction.SERVER_ONLY);
         }
         reopen(actor, replacement.id());
         return true;

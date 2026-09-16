@@ -7,7 +7,7 @@
     },
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
-      "conditions": { "recipe": "totem:locksmith/key_blank" }
+      "conditions": { "recipes": "totem:locksmith/key_blank" }
     }
   },
   "requirements": [["has_iron_nugget", "has_the_recipe"]],

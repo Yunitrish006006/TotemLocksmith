@@ -3,7 +3,7 @@
   "criteria": {
     "crafted_padlock": {
       "conditions": {
-        "recipe_id": "totem:locksmith/padlock"
+        "recipes": "totem:locksmith/padlock"
       },
       "trigger": "minecraft:recipe_crafted"
     }

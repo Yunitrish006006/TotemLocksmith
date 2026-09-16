@@ -28,7 +28,7 @@ public final class LocksmithManagementVisualGameTest implements FabricClientGame
         selectTraditionalChinese(context);
 
         try (TestSingleplayerContext singleplayer = context.worldBuilder().create()) {
-            singleplayer.getClientLevel().waitForChunksRender();
+            singleplayer.getConnection().waitForChunksRender();
             LocksmithManagementScreen screen = context.computeOnClient(client -> {
                 if (client.player == null) {
                     throw new IllegalStateException("Client GameTest did not provide a player");

@@ -30,7 +30,7 @@ public final class LocksmithObserverProviderClientGameTest implements FabricClie
 
     @Override public void runTest(ClientGameTestContext context) {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
-            world.getClientLevel().waitForChunksRender();
+            world.getConnection().waitForChunksRender();
             context.getInput().resizeWindow(1280, 720);
             LocksmithObserverScreenProvider provider = context.computeOnClient(client -> {
                 boolean registered = FabricLoader.getInstance()

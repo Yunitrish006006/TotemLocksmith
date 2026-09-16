@@ -17,6 +17,7 @@ import dev.totem.locksmith.service.LocksmithAccessService;
 import dev.totem.locksmith.service.ResolvedLock;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.commands.Commands;
+import net.minecraft.util.Prediction;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.UuidArgument;
 import net.minecraft.network.chat.Component;
@@ -182,7 +183,7 @@ public final class LocksmithCommands {
         if (!player.getAbilities().instabuild) player.getItemInHand(hand).shrink(1);
         ItemStack key = new ItemStack(LocksmithItems.BOUND_KEY);
         key.set(LocksmithDataComponents.KEY_BINDING, new KeyBinding(record.id(), keyId, record.keyEpoch()));
-        if (!player.getInventory().add(key)) player.drop(key, false);
+        if (!player.getInventory().add(key)) player.drop(key, false, Prediction.SERVER_ONLY);
         player.sendSystemMessage(Component.translatable("message.totem.locksmith.key_bound", keyId.toString()));
         return 1;
     }

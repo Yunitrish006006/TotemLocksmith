@@ -20,6 +20,7 @@ import dev.totem.locksmith.topology.TopologyScanResult;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.Prediction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -355,7 +356,7 @@ public final class LocksmithAuthority {
         ServerLevel level = (ServerLevel) actor.level();
         clearMarkers(level, record.allPositions());
         ItemStack padlock = new ItemStack(LocksmithItems.PADLOCK);
-        if (!actor.getInventory().add(padlock)) actor.drop(padlock, false);
+        if (!actor.getInventory().add(padlock)) actor.drop(padlock, false, Prediction.SERVER_ONLY);
         return true;
     }
 
