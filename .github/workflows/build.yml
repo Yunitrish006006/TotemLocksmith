@@ -39,7 +39,7 @@ jobs:
         run: |
           set -euo pipefail
           chmod +x gradlew .lockstep/TotemCore/gradlew
-          ./.lockstep/TotemCore/gradlew -p .lockstep/TotemCore jar --no-daemon --stacktrace
+          ./.lockstep/TotemCore/gradlew -p .lockstep/TotemCore jar --init-script ${GITHUB_WORKSPACE}/.github/scripts/lavapipe.gradle --no-daemon --stacktrace
           core_version="$(sed -n 's/^mod_version=//p' .lockstep/TotemCore/gradle.properties)"
           test "$core_version" = '0.7.23'
           core_jar="${GITHUB_WORKSPACE}/.lockstep/TotemCore/build/libs/totem-core-${core_version}.jar"
@@ -51,7 +51,7 @@ jobs:
         run: |
           set -euo pipefail
           ./gradlew -PtotemCoreJar="$CORE_JAR" \
-            test assemble compileGametestJava runGameTest --no-daemon --stacktrace
+            test assemble compileGametestJava runGameTest --init-script ${GITHUB_WORKSPACE}/.github/scripts/lavapipe.gradle --no-daemon --stacktrace
 
       - name: Client GUI GameTests
         shell: bash
@@ -61,7 +61,7 @@ jobs:
           export VK_DRIVER_FILES=/usr/share/vulkan/icd.d/lvp_icd.json
           export VK_ICD_FILENAMES="$VK_DRIVER_FILES"
           xvfb-run -a ./gradlew -PtotemCoreJar="$CORE_JAR" \
-            runClientGameTest --no-daemon --stacktrace
+            runClientGameTest --init-script ${GITHUB_WORKSPACE}/.github/scripts/lavapipe.gradle --no-daemon --stacktrace
 
       - name: Upload Locksmith GUI screenshots
         if: always()
@@ -96,13 +96,13 @@ jobs:
           ./gradlew -PtotemCoreJar="$CORE_JAR" \
             -PtotemLocksmithRestartProbePhase=seed \
             -PtotemLocksmithRestartProbeMarkerDir="$markers" \
-            runLocksmithRestartProbe --no-daemon --stacktrace
+            runLocksmithRestartProbe --init-script ${GITHUB_WORKSPACE}/.github/scripts/lavapipe.gradle --no-daemon --stacktrace
           test -f "$markers/seed.ok"
           test ! -f "$markers/seed.failure"
           ./gradlew -PtotemCoreJar="$CORE_JAR" \
             -PtotemLocksmithRestartProbePhase=verify \
             -PtotemLocksmithRestartProbeMarkerDir="$markers" \
-            runLocksmithRestartProbe --no-daemon --stacktrace
+            runLocksmithRestartProbe --init-script ${GITHUB_WORKSPACE}/.github/scripts/lavapipe.gradle --no-daemon --stacktrace
           test -f "$markers/verify.ok"
           test ! -f "$markers/verify.failure"
 
@@ -114,7 +114,7 @@ jobs:
           printf 'eula=true\n' > run/eula.txt
           set +e
           timeout --signal=TERM --kill-after=15s 90s \
-            ./gradlew -PtotemCoreJar="$CORE_JAR" runServer --no-daemon --stacktrace \
+            ./gradlew -PtotemCoreJar="$CORE_JAR" runServer --init-script ${GITHUB_WORKSPACE}/.github/scripts/lavapipe.gradle --no-daemon --stacktrace \
             > locksmith-server.log 2>&1
           status=$?
           set -e
