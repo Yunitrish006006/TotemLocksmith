@@ -57,6 +57,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          export SDL_VIDEO_DRIVER=x11
+          export VK_DRIVER_FILES=/usr/share/vulkan/icd.d/lvp_icd.json
+          export VK_ICD_FILENAMES="$VK_DRIVER_FILES"
           xvfb-run -a ./gradlew -PtotemCoreJar="$CORE_JAR" \
             runClientGameTest --no-daemon --stacktrace
 
