@@ -98,21 +98,6 @@ jobs:
             file "$asset" | grep -F '16 x 16'
           done
 
-      - name: Manual visual review checklist
-        if: always()
-        shell: bash
-        run: |
-          {
-            echo '## Manual visual review required'
-            echo ''
-            echo 'Review the `locksmith-gui-screenshots` artifact before accepting visual changes.'
-            echo ''
-            echo '- Check vanilla-style spacing, widgets, font, tooltips, focus, and clipping.'
-            echo '- Check native-scale readability, pixel crispness, and module identity.'
-            echo '- Check English and Traditional Chinese layout at supported GUI scales.'
-            echo '- Record approval or rejection in the workflow review/issue.'
-          } >> "$GITHUB_STEP_SUMMARY"
-
       - name: Two-JVM persistence probe
         shell: bash
         run: |
